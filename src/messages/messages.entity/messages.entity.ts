@@ -14,11 +14,20 @@ export class MessagesEntity {
   @Column({ nullable: false })
   userName: string;
 
+  @Column({ nullable: true })
+  sendedBy?: string;
+
+  @Column({ nullable: false })
+  message: string;
+
   @Column({ nullable: false })
   read: boolean;
 
   @Column({ nullable: false })
-  message: string;
+  needAnswer: boolean;
+
+  @Column({ nullable: false })
+  answer: boolean;
 
   @Column({ nullable: true })
   created_at?: Date;

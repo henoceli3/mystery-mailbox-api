@@ -16,42 +16,38 @@ export class MessagesService {
     private readonly firebaseService: FirebaseService,
   ) {}
 
-  /**
-   * Creates a new message with the specified user name and message.
-   *
-   * @param {string} userName - The user name for the message.
-   * @param {string} message - The content of the message.
-   * @return {Promise<{message: string, data: {userName: string, uuid: string, message: string, created_at: Date}}>} - A promise that resolves to an object containing the created message details.
-   */
   async v1_create(
     userName: string,
     message: string,
+    sendedBy: string,
+    needAnswer: boolean,
+    answer: boolean,
   ): Promise<{
     message: string;
     data: {
-      userName: string;
       uuid: string;
-      message: string;
       created_at: Date;
     };
   }> {
     try {
+      console.log(`createdMessage: ${needAnswer}`);
       const encodedMessage = encodeURIComponent(message); // encoder le message
       const createdMessage = await this.messagesRepository.save({
         uuid: uuidv4(),
-        userName: userName.toLowerCase().trim(),
-        read: false,
-        message: encodedMessage,
         is_active: true,
+        userName: userName.toLowerCase().trim(),
+        sendedBy: sendedBy,
+        message: encodedMessage,
+        read: false,
+        needAnswer: needAnswer,
+        answer: answer,
         created_at: new Date(),
-      }); // enregistrer le message
+      });
 
       return {
         message: 'Message Created',
         data: {
-          userName: userName,
           uuid: createdMessage.uuid,
-          message: message,
           created_at: createdMessage.created_at,
         },
       };
@@ -101,13 +97,17 @@ export class MessagesService {
             decodeURI(message.message),
             30,
           );
+          console.log(`needAnswer${message.id}: ${message.needAnswer}`);
           return {
             uuid: message.uuid,
+            sendedBy: message.sendedBy,
             title: title,
             body: decodeURI(message.message),
             fromOtherUser: true,
             dateOfReception: message.created_at,
             read: message.read,
+            needAnswer: message.needAnswer,
+            answer: message.answer,
           };
         }),
       );
@@ -147,18 +147,14 @@ export class MessagesService {
   /**
    * Deletes a single message.
    *
-   * @param {string} uuid - The UUID of the message to delete.
-   * @return {Promise<{ message: string, data: {} }>} - An object containing a success message and an empty data object.
-   * @throws {BadRequestException} - If an error occurs during the deletion process.
+   * @param {string} uuid - The UUID of the message to be deleted.
+   * @return {Promise<{ message: string; data: object }>} A promise that resolves to an object with a message and a data property.
    */
   async deleteOneMessage(
     uuid: string,
   ): Promise<{ message: string; data: object }> {
     try {
-      await this.messagesRepository.update(
-        { uuid: uuid },
-        { is_active: false, deleted_at: new Date() },
-      );
+      await this.messagesRepository.delete({ uuid: uuid });
       return {
         message: 'Message deleted',
         data: {},
@@ -171,18 +167,14 @@ export class MessagesService {
   /**
    * Deletes a list of messages.
    *
-   * @param {string[]} uuids - An array of UUIDs representing the messages to be deleted.
-   * @return {Promise<{ message: string, data: {} }>} - A promise that resolves to an object with a message and an empty data object.
-   * @throws {BadRequestException} - If an error occurs during the deletion process.
+   * @param {string[]} uuids - The UUIDs of the messages to delete.
+   * @return {Promise<{ message: string; data: object }>} - A promise that resolves with an object containing the message 'Messages deleted' and an empty data object.
    */
   async deleteMessageList(
     uuids: string[],
   ): Promise<{ message: string; data: object }> {
     try {
-      await this.messagesRepository.update(
-        { uuid: In(uuids) },
-        { is_active: false, deleted_at: new Date() },
-      );
+      await this.messagesRepository.delete({ uuid: In(uuids) });
       return {
         message: 'Messages deleted',
         data: {},
@@ -206,6 +198,9 @@ export class MessagesService {
     messageUuid: string,
     message: string,
     created_at: Date,
+    sendedBy: string,
+    needAnswer: boolean,
+    answer: boolean,
   ): Promise<{
     message: string;
     data: object;
@@ -221,6 +216,9 @@ export class MessagesService {
         messageUuid,
         message,
         created_at,
+        sendedBy,
+        needAnswer,
+        answer,
       );
       return {
         message: 'Message sent',

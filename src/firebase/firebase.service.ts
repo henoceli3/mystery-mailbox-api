@@ -25,21 +25,28 @@ export class FirebaseService {
     uuid: string,
     body: string,
     dateOfReception: Date,
+    sendedBy: string,
+    needAnswer: boolean,
+    answer: boolean,
   ) {
     try {
       const message: TokenMessage = {
+        token: registrationTokens,
         data: {
           uuid: uuid,
           body: body,
           fromOtherUser: true.toString(),
           dateOfReception: dateOfReception.toISOString(),
+          sendedBy: sendedBy,
+          needAnswer: needAnswer.toString(),
+          answer: answer.toString(),
         },
         notification: {
           title: 'Vous avez un nouveau message',
           body: 'Cliquez ici pour voir le message',
         },
-        token: registrationTokens,
       };
+      console.log(message);
       return await this.messaging.send(message);
     } catch (error) {
       console.log(error);

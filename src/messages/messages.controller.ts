@@ -20,18 +20,31 @@ export class MessagesController {
   async v1_createAndSend(
     @Body('userName') userName: string,
     @Body('message') message: string,
-    @Req() request: Request,
+    @Body('sendedBy') sendedBy: string,
+    @Body('needAnswer') needAnswer: boolean,
+    @Body('answer') answer: boolean,
+    @Req()
+    request: Request,
   ) {
     const result = validationResult(request);
     if (!result.isEmpty()) {
       throw new BadRequestException(result);
     }
-    const createdMessage = await this.service.v1_create(userName, message);
+    const createdMessage = await this.service.v1_create(
+      userName,
+      message,
+      sendedBy,
+      needAnswer,
+      answer,
+    );
     return await this.service.v1_sendMessage(
       userName,
       createdMessage.data.uuid,
-      createdMessage.data.message,
+      message,
       createdMessage.data.created_at,
+      sendedBy,
+      needAnswer,
+      answer,
     );
   }
 

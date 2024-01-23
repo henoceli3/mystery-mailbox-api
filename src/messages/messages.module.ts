@@ -16,10 +16,14 @@ export class MessagesModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(
-        body('userName').notEmpty().isString(),
-        body('message').notEmpty().isString(),
+        body('userName').notEmpty().isString().escape(),
+        body('message').notEmpty().isString().escape(),
+        body('sendedBy').isString().escape(),
+        body('needAnswer').notEmpty().isBoolean(),
+        body('answer').notEmpty().isBoolean(),
       )
       .forRoutes('v1/messages/create_and_send');
+
     consumer
       .apply(body('userName').notEmpty().isString())
       .forRoutes('v1/messages/findByUser');
