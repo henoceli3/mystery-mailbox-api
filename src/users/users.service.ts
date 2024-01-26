@@ -89,4 +89,14 @@ export class UsersService {
       data: null,
     };
   }
+
+  async findAll(): Promise<{ message: string; data: object }> {
+    const users = await this.usersRepository.find();
+    return {
+      message: 'Users fetched',
+      data: {
+        users: users,
+      },
+    };
+  }
 }

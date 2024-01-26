@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
@@ -51,5 +52,11 @@ export class UsersController {
       throw new BadRequestException(result);
     }
     return this.service.delete(userName);
+  }
+
+  @Get('findAll')
+  @HttpCode(200)
+  async findAll() {
+    return await this.service.findAll();
   }
 }
